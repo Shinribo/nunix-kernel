@@ -23,38 +23,52 @@ SECTIONS
     /* that is the beginning of the region. */
     . = 0xffffffff80000000;
  
-    .text : {
+    /*All Sections are aligned on a 64k boundary*/
+    .text ALIGN(0x10000) : {
+        kernel_text_begin = .
         *(.text .text.*)
     } :text
+    kernel_text_end = .
  
-    /* Move to the next memory page for .rodata */
-    . += CONSTANT(MAXPAGESIZE);
- 
-    .rodata : {
+
+    .rodata ALIGN(0x10000) : {
+        kernel_rdata_begin = .
         *(.rodata .rodata.*)
     } :rodata
+    kernel_rdata_end = .
  
-    /* Move to the next memory page for .data */
-    . += CONSTANT(MAXPAGESIZE);
- 
-    .data : {
+
+    .data ALIGN(0x10000) : {
+        kernel_data_begin = .
         *(.data .data.*)
     } :data
- 
+    kernel_data_end = .
+
     /* Dynamic section for relocations, both in its own PHDR and inside data PHDR */
-    .dynamic : {
+    .dynamic ALIGN(0x10000) : {
+        kernel_dyn_begin = .
         *(.dynamic)
     } :data :dynamic
- 
+    kernel_dyn_end = .
+
+    .tls ALIGN(0x10000) : {
+        kernel_tls_begin = .
+        *(.tdata .tdata.*)
+        *(.tbss .tbss.*)
+    } :data
+    kernel_tls_end = .
+
     /* NOTE: .bss needs to be the last thing mapped to :data, otherwise lots of */
     /* unnecessary zeros will be written to the binary. */
     /* If you need, for example, .init_array and .fini_array, those should be placed */
     /* above this. */
-    .bss : {
+    .bss ALIGN(0x10000) : {
+        kernel_bss_begin = .
         *(.bss .bss.*)
         *(COMMON)
     } :data
- 
+    kernel_bss_end = .
+
     /* Discard .note.* and .eh_frame since they may cause issues on some hosts. */
     /DISCARD/ : {
         *(.eh_frame)
